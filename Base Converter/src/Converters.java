@@ -8,7 +8,7 @@ public class Converters {
 	* Returns: The hex value as a string                                          *
 	******************************************************************************/
 	
-	String DecToHex(double value) {
+	protected String DecToHex(double value) {
 		//To convert from a decimal value to a hex value, first convert the integer part,
 		//and then the fractional part
 		
@@ -55,7 +55,7 @@ public class Converters {
 	* Returns: The binary value as a string                                       *
 	******************************************************************************/
 	
-	String DecToBin(double value) {
+	protected String DecToBin(double value) {
 		//To convert from a decimal value to a binary value, first convert the integer part,
 		//and then the fractional part
 		
@@ -92,7 +92,7 @@ public class Converters {
 	* Returns: The octal value as a string                                        *
 	******************************************************************************/
 	
-	String DecToOct(double value) {
+	protected String DecToOct(double value) {
 		//To convert from a decimal value to a binary value, first convert the integer part,
 		//and then the fractional part
 		
@@ -100,9 +100,9 @@ public class Converters {
 		String numConverted = ""; //Holds the converted value
 		
 		while (integer != 0) { //While the integer part has not been converted yet 
-			numConverted = integer % 2 + numConverted; //Keep appending the remainder after
+			numConverted = integer % 8 + numConverted; //Keep appending the remainder after
 			//each quotient
-			integer = integer/2;
+			integer = integer/8;
 		}
 		
 		numConverted = numConverted + "."; //Add the binary point
@@ -113,12 +113,157 @@ public class Converters {
 		
 		while (fraction != 0) {
 			//Keep multiplying until you only have 0's to the right of the binary point
-			fraction = fraction * 2;
+			fraction = fraction * 8;
 			int digitToAppend = (int) fraction; //Get what is to the left of the binary point
 			numConverted = numConverted + digitToAppend; //Append the integer part
 			fraction = fraction - ((int) fraction); //Drop the integer part of the product
 		}
 		
 		return numConverted; //Now return the equivalent binary value as a string
+	}
+	
+	/******************************************************************************
+	* Method Name: HexToDec                                                       *
+	* Purpose: This function converts an input (given in the hex base) to its 	  * 
+	* equivalent decimal value 													  *
+	* Returns: The decimal value			                                      *
+	******************************************************************************/
+
+	protected double HexToDec(String number) {
+		String[] letters = {"A", "B", "C", "D", "E", "F"};
+		String integerPart = "";
+		String decimalPart = "";
+		int placeValue = 0; //Keeps track of how much weight each char/digit holds
+		boolean converted = false; //Flag that says if a number has been converted already
+		double numConverted = 0;
+		
+		if (number.indexOf(".") != -1) {
+			integerPart = number.substring(0, number.indexOf("."));
+			decimalPart = number.substring(number.indexOf(".") + 1);
+		}
+		else {
+			integerPart = number;
+			decimalPart = "";
+		}
+		
+		/* First convert the integer part of the input string */
+		for (int i = integerPart.length() - 1; i >= 0 ; i--) { //To get it right, iterate through the integer part backwards
+			converted = false; //Initially, no conversion has happened
+			for (int j = 0; j < letters.length; j++) {
+				if (integerPart.substring(i,i+1).equals(letters[j])) { //When any input character is a letter
+					numConverted = ((j+10)*(Math.pow(16, placeValue))) + numConverted; //The value of that letter is its index+10
+					placeValue++; //Increase the placeValue of each digit
+					converted = true;
+				}
+			}
+			if (!converted) {
+				numConverted = numConverted + (Double.parseDouble(integerPart.substring(i,i+1))*(Math.pow(16, placeValue)));
+				//If the digit is not a letter, then simply convert it to a double and add to the total
+				placeValue++;
+			}
+		}
+		
+		placeValue = 1; //When the integer part is converted, placeValue starts from 16^(-1)
+		
+		/* Now convert the decimal part of the input string */
+		for (int i = 0; i < decimalPart.length(); i++) {
+			converted = false;
+			for (int j = 0; j < letters.length; j++) {
+				if (decimalPart.substring(i,i+1).equals(letters[j])) { //When any input character is a letter
+					numConverted = numConverted + ((j+10)/Math.pow(16, placeValue)); //The value of that letter is its index+10
+					placeValue++;
+					converted = true;
+				}
+			}
+			if (!converted) {
+				numConverted = numConverted + (Double.parseDouble(decimalPart.substring(i,i+1))/Math.pow(16, placeValue));
+				//If the digit is not a letter, then simply convert it to a double and add to the total
+				placeValue++;
+			}
+		}
+		
+		return numConverted;
+	}
+	
+	/******************************************************************************
+	* Method Name: BinToDec                                                       *
+	* Purpose: This function converts an input (given in the binary base) to its  * 
+	* equivalent decimal value 													  *
+	* Returns: The decimal value			                                      *
+	******************************************************************************/
+
+	protected double BinToDec(String number) {
+		String integerPart = "";
+		String decimalPart = "";
+		int placeValue = 0; //Keeps track of how much weight each char/digit holds
+		double numConverted = 0;
+		
+		if (number.indexOf(".") != -1) {
+			integerPart = number.substring(0, number.indexOf("."));
+			decimalPart = number.substring(number.indexOf(".") + 1);
+		}
+		else {
+			integerPart = number;
+			decimalPart = "";
+		}
+		
+		/* First convert the integer part of the input string */
+		for (int i = integerPart.length() - 1; i >= 0 ; i--) { //To get it right, iterate through the integer part backwards
+			numConverted = numConverted + (Double.parseDouble(integerPart.substring(i,i+1))*(Math.pow(2, placeValue)));
+			//If the digit is not a letter, then simply convert it to a double and add to the total
+			placeValue++;
+		}
+		
+		placeValue = 1; //When the integer part is converted, placeValue starts from 2^(-1)
+		
+		/* Now convert the decimal part of the input string */
+		for (int i = 0; i < decimalPart.length(); i++) {
+			numConverted = numConverted + (Double.parseDouble(decimalPart.substring(i,i+1))/Math.pow(2, placeValue));
+			//If the digit is not a letter, then simply convert it to a double and add to the total
+			placeValue++;
+		}
+		
+		return numConverted;
+	}
+	
+	/******************************************************************************
+	* Method Name: OctToDec                                                       *
+	* Purpose: This function converts an input (given in the octal base) to its   * 
+	* equivalent decimal value 													  *
+	* Returns: The decimal value			                                      *
+	******************************************************************************/
+
+	protected double OctToDec(String number) {
+		String integerPart = "";
+		String decimalPart = "";
+		int placeValue = 0; //Keeps track of how much weight each char/digit holds
+		double numConverted = 0;
+		
+		if (number.indexOf(".") != -1) {
+			integerPart = number.substring(0, number.indexOf("."));
+			decimalPart = number.substring(number.indexOf(".") + 1);
+		}
+		else {
+			integerPart = number;
+			decimalPart = "";
+		}
+		
+		/* First convert the integer part of the input string */
+		for (int i = integerPart.length() - 1; i >= 0 ; i--) { //To get it right, iterate through the integer part backwards
+			numConverted = numConverted + (Double.parseDouble(integerPart.substring(i,i+1))*(Math.pow(8, placeValue)));
+			//If the digit is not a letter, then simply convert it to a double and add to the total
+			placeValue++;
+		}
+		
+		placeValue = 1; //When the integer part is converted, placeValue starts from 2^(-1)
+		
+		/* Now convert the decimal part of the input string */
+		for (int i = 0; i < decimalPart.length(); i++) {
+			numConverted = numConverted + (Double.parseDouble(decimalPart.substring(i,i+1))/Math.pow(8, placeValue));
+			//If the digit is not a letter, then simply convert it to a double and add to the total
+			placeValue++;
+		}
+		
+		return numConverted;
 	}
 }
