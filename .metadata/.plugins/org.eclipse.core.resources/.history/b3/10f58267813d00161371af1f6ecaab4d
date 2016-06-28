@@ -1,0 +1,114 @@
+package Converter;
+
+public class ErrorChecking {
+	protected boolean errorCheck(int conversion, String input, int firstBase, int secondBase) {
+		
+		if (input.indexOf(".") != -1) { //If there is a point in the input
+			if (input.substring(input.indexOf(".")).indexOf(".") != -1) {
+				return true; //Check for multiple points (i.e. decimal points, hex points)
+			}
+		}
+		
+		switch(conversion) {
+			case 3: //Hex to Decimal conversion was selected
+				return hexInputError(input);
+			case 4: //Binary to Decimal conversion was selected
+				return binInputError(input);
+			case 5: //Octal to Decimal conversion was selected
+				return octInputError(input);
+			case 6:
+				return varInputError(input, firstBase, secondBase);
+			default:
+				return decInputError(input);
+		}
+	}
+	
+	protected static boolean varInputError(String input, int firstBase, int secondBase) {
+		input = input.replaceAll("\\s+", " ");
+		firstBase = firstBase.replaceAll("\\s+", " ");
+		secondBase = secondBase.replaceAll("\\s+", " ");
+		//First get rid of any extra whitespace characters
+		return false;
+	}
+
+	protected static boolean hexInputError(String input) {
+		String[] letters = {"A", "B", "C", "D", "E", "F"};
+		boolean letter = false; //This is only set to true when a letter is being analyzed
+		
+		for (int i = 0; i < input.length(); i++) { //Iterate through the entire input
+			for (int j = 0; j < letters.length; j++) { //First check if there are any letters
+				if (input.substring(i,i+1).equals(letters[j])) { //If you run into a letter
+					letter = true; //Then set the flag
+					if ((j+10) >= 16) { //If that letter has a value > or = to 16
+						return true; //The input is incorrect
+					}
+				}
+			}
+			try { //See if a valid digit was given
+				if (input.substring(i,i+1).equals(".")) { //Skip over the point if there is one
+					continue;
+				}
+				if (!letter) { //If a letter is not being analyzed
+					Double.parseDouble(input.substring(i,i+1));
+				}
+				letter = false; //Reset the letter flag, before proceeding to the next input char
+			}
+			catch (Exception e) { //If not, there is an error
+				return true;
+			}
+		}
+		return false; //If none of the above is true, then the input is valid
+	}
+	
+	protected static boolean octInputError(String input) {
+		for (int i = 0; i < input.length(); i++) {
+			try {
+				if (input.substring(i,i+1).equals(".")) { //Skip over the point if there is one
+					continue;
+				}
+				
+				else if(Double.parseDouble(input.substring(i,i+1)) >= 8) {
+					return true;
+				}
+			}
+			catch (Exception e) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	protected static boolean binInputError(String input) {
+		for (int i = 0; i < input.length(); i++) {
+			try {
+				if (input.substring(i,i+1).equals(".")) { //Skip over the point if there is one
+					continue;
+				}
+				
+				if(Double.parseDouble(input.substring(i,i+1)) >= 2) {
+					return true;
+				}
+			}
+			catch (Exception e) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	protected static boolean decInputError(String input) {
+		for (int i = 0; i < input.length(); i++) {
+			try {
+				if (input.substring(i,i+1).equals(".")) { //Skip over the point if there is one
+					continue;
+				}
+				
+				Double.parseDouble(input.substring(i,i+1)); //Check if a digit is there
+			}
+			catch (Exception e) {
+				return true;
+			}
+		}
+		return false;
+	}
+}

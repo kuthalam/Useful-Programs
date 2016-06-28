@@ -1,0 +1,101 @@
+package Converter;
+
+import javax.swing.JOptionPane;
+
+public class BaseConverter {
+
+	public static void main(String[] args) {
+		/* Local variables, data structures, objects, etc. */
+		int again = 0; //Whether the user would like to continue converting/Initialized to "yes"
+		String finalAnswer = ""; //The final answer returned after conversion
+		int conversion = 0; //Determines what the user wants to convert from and to (i.e. Decimal to Hex)
+		String number = ""; //The number to convert
+		int firstBase = 0; //In the case "any base to any other base" is selected, this holds the base to convert from
+		int secondBase = 0; //The base to convert to (see above comment for context)
+		
+		Object[] buttons = {"Decimal to Hex", "Decimal to Binary", "Decimal to Octal",
+				"Hex to Decimal", "Binary to Decimal", "Octal to Decimal", "Any base to any other base"
+		}; //The names of the types of conversions that can be performed
+		
+		ErrorChecking checker = new ErrorChecking(); //An ErrorChecking object to eliminate erroneous inputs
+		
+		/*Initiate converter here */
+		while (again == 0) {
+			/* Get user input and check for invalid inputs */
+			number = JOptionPane.showInputDialog("Enter the number to convert: ");
+			conversion = JOptionPane.showOptionDialog(null, "How would you like to convert this number?",
+					null, JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, buttons, null);
+			
+			while(checker.errorCheck(conversion, number)) {
+				number = JOptionPane.showInputDialog("It seems your last input was invalid."
+						+ "Please re-enter the number to convert: ");
+				conversion = JOptionPane.showOptionDialog(null, "How would you like to convert this number?",
+						null, JOptionPane.DEFAULT_OPTION, JOptionPane.QUESTION_MESSAGE, null, buttons, null);
+			}
+			
+			/* Determine which conversion was selected (to figure out whether to convert from string or double) */
+			if (conversion < 3) {
+				double value = Double.parseDouble(number); //Convert the input to a double number
+				finalAnswer = convert(conversion, value, null);
+			}
+			else if ((conversion >= 3) && (conversion < 5)) {
+				finalAnswer = convert(conversion, 0, number);
+				//In the case one wants to convert from anything to decimal, convert directly from the string
+			}
+			else { //Variable base to another variable base was selected
+				String bases = JOptionPane.showInputDialog("You selected \"any base to any other base\". Please"
+						+ " specify which base to convert from and to with each base value separated by a space"
+						+ " (i.e. if we want to convert from base 4 to base 16, type \"4 16\".");
+				firstBase = Integer.parseInt(bases.substring(0, bases.indexOf(" ")));
+			}
+			
+			while (finalAnswer.equals("")) { //In the case something goes strangely wrong...
+				//Use the "error code" ("") in convert(...) to re-start the program
+				main(args); //by making a recursive call to main.
+			}
+			
+			/* Display the final answer */
+			JOptionPane.showMessageDialog(null, "You asked for " + number + " to be converted from "
+					+ buttons[conversion] + ". The converted value is " + finalAnswer + ".");
+			
+			/* Go again? */
+			again = JOptionPane.showOptionDialog(null, "Would you like to convert another number?",
+					"Re-run?", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
+		}
+	}
+	
+	protected static String convert(int convertType, double numToConvert, String stringToConvert) {
+		/* Local variables, data structures, objects, etc. */
+		Converters convert = new Converters();
+		
+		/* Convert based on the user's selection */
+		switch(convertType) { //Now decide how to convert the input
+		case 0: //Decimal to Hex conversion was selected
+			return convert.DecToHex(numToConvert);
+			
+		case 1: //Decimal to Binary conversion was selected
+			return convert.DecToBin(numToConvert);
+			
+		case 2: //Decimal to Octal conversion was selected
+			return convert.DecToOct(numToConvert);
+			
+		case 3: //Hex to Decimal conversion was selected
+			return Double.toString(convert.HexToDec(stringToConvert));
+			
+		case 4: //Binary to Decimal conversion was selected
+			return Double.toString(convert.BinToDec(stringToConvert));
+			
+		case 5: //Octal to Decimal conversion was selected
+			return Double.toString(convert.OctToDec(stringToConvert));
+			
+		case 6:
+			return Double.toString(convert.VarToVar(stringToConvert));
+			
+		default: //No conversion has been selected
+			break;
+		}
+		
+		return ""; //Error code is returned
+	}
+	
+}
